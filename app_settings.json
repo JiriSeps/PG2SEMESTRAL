@@ -1,0 +1,13 @@
+{
+  "appname": "My OpenGL Game",
+  "default_resolution": {
+    "x": 1280,
+    "y": 720
+  },
+  "antialiasing_enabled": true,
+  "antialiasing_level": 4,
+  "resource_path": "resources/",
+  "shader_dir": "shaders/",
+  "texture_dir": "textures/",
+  "object_dir": "objects/"
+}
