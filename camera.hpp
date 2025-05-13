@@ -33,10 +33,10 @@ public:
         glm::vec3 direction{ 0 };
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            direction += Front;
+            direction += glm::normalize(glm::vec3(Front.x, 0.0f, Front.z));
 
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            direction -= Front;
+            direction -= glm::normalize(glm::vec3(Front.x, 0.0f, Front.z));
 
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
             direction -= Right;

@@ -35,7 +35,7 @@ out vec4 FragColor;
 
 void main() {
     vec4 texColor = texture(uTexture, fs_in.texCoord);
-    if (texColor.a < 0.1) discard;
+    //if (texColor.a < 0.1) discard;
 
     vec3 N = normalize(fs_in.N);
     vec3 V = normalize(fs_in.V);

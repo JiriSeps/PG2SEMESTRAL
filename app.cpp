@@ -165,7 +165,7 @@ void App::generateMazeModels(const cv::Mat& mapa) {
 
     float offsetX = mapa.cols / 2.0f;
     float offsetZ = mapa.rows / 2.0f;
-    float maze_base_y = -67.0f; // or adjust slightly higher if you want them to sit on terrain
+    float maze_base_y = -67.0f;
     float maze_floor_base_y = -68.0f;
 
     for (int j = 0; j < mapa.rows; ++j) {
@@ -539,9 +539,57 @@ int App::run() {
 
         // === Camera movement and height ===
         glm::vec3 move = camera.ProcessInput(window, deltaTime);
+
+        // === Odstranění trhání: ignoruj mikro-pohyb ===
+        if (glm::length(move) < 0.001f) {
+            move = glm::vec3(0.0f);
+        }
         camera.Position = handleCameraCollision(camera.Position + move);
 
-        if (!noclip_enabled) updateCameraHeight();  // Keep your existing height logic here as a helper
+
+        if (!noclip_enabled) updateCameraHeight();
+
+        static bool was_on_wall_top = false;
+        bool on_wall_top = false;
+        static float left_wall_time = 0.0f;
+        float wall_top_y = 1.0f;
+        float eps = 0.01f;
+
+        for (const Model* m : maze_models) {
+            if (!m || m->transparent) continue;
+
+            glm::vec3 player = camera.Position;
+            glm::vec3 half = m->scale * 0.5f;
+
+            float topY = m->origin.y + half.y;
+            float minX = m->origin.x - half.x;
+            float maxX = m->origin.x + half.x;
+            float minZ = m->origin.z - half.z;
+            float maxZ = m->origin.z + half.z;
+
+            bool insideXZ = player.x >= minX && player.x <= maxX &&
+                player.z >= minZ && player.z <= maxZ;
+            float yDiff = player.y - topY;
+            float targetY = topY + wall_top_y;
+
+            if (!noclip_enabled && insideXZ && std::abs(yDiff) < 1.0f) {
+                if (player.y < targetY - 0.01f || !was_on_wall_top) {
+                    camera.Position.y = targetY;
+                }
+                on_wall_top = true;
+                break;
+            }
+        }
+
+
+        was_on_wall_top = on_wall_top;
+
+        if (!noclip_enabled && !on_wall_top)
+            updateCameraHeight();
+
+        else if (!on_wall_top && was_on_wall_top)
+            camera.Position.y -= 0.05f; // jemný pád pro vyproštění
+
 
         // === Upload matrices ===
         glm::mat4 view = camera.GetViewMatrix();
